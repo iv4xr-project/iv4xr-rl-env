@@ -6,7 +6,6 @@ public abstract class RLEnvironment<ActionType, ObservationType, RewardType, End
 	protected RewardType rewardFunction;
 	protected EndConditionType endCondition;
 	
-	
 	protected ObservationType initialObservation;
 	protected ObservationType currentObservation;
 	

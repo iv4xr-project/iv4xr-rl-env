@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import rl.connector.RLAgentConfig;
 import rl.connector.RLAgentRequest;
 import rl.connector.RLAgentSocketConnector;
-import rl.environment.generic.RLContinuousActionSpace;
+import rl.environment.generic.RLBoxSpace;
 import rl.environment.generic.RLEnvSpec;
 import rl.environment.intrusion.RLIntrusionEnvironment;
 
@@ -20,7 +20,7 @@ public class RLAgentConnectTest {
 	{
 		double[] actionMin = {-10.0, -10.0};
 		double[] actionMax = {10.0, 10.0};
-		var actionSpace = new RLContinuousActionSpace(actionMin, actionMax);
+		var actionSpace = new RLBoxSpace(actionMin, actionMax);
 		var envSpec = new RLEnvSpec<>("IntrusionSim", actionSpace);
 		
 		var config = new RLAgentConfig();

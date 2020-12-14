@@ -14,6 +14,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import rl.environment.generic.DictSpaceSerializer;
+import rl.environment.generic.RLDictSpace;
 import zmq.ZError;
 
 import org.zeromq.ZMQ;
@@ -74,6 +76,7 @@ public class RLAgentSocketConnector {
 	private static Gson gson = new GsonBuilder()
 		.serializeNulls()
 		.excludeFieldsWithModifiers(Modifier.TRANSIENT)
+		.registerTypeAdapter(RLDictSpace.class, new DictSpaceSerializer())
 		.create();
 	
 	// initialise socket and input output streams

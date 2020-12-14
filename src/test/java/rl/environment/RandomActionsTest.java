@@ -1,11 +1,12 @@
 package rl.environment;
 
 import java.util.Arrays;
+import java.util.Random;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import rl.environment.generic.RLContinuousActionSpace;
+import rl.environment.generic.RLBoxSpace;
 import rl.environment.generic.RLEnvSpec;
 import rl.environment.intrusion.RLIntrusionEnvironment;
 import rl.environment.intrusion.RLMoveAction;
@@ -14,9 +15,12 @@ public class RandomActionsTest {
 
 	@Test
 	public void randomActionsTest() {
+		long rndSeed = 1287821 ; // a prime and a palindrome :D
+		Random rnd = new Random(rndSeed);
+		
 		double[] actionMin = {-10.0, -10.0};
 		double[] actionMax = {10.0, 10.0};
-		var actionSpace = new RLContinuousActionSpace(actionMin, actionMax);
+		var actionSpace = new RLBoxSpace(actionMin, actionMax);
 		var envSpec = new RLEnvSpec<>("IntrusionSim", actionSpace);
 		var rlEnv = new RLIntrusionEnvironment(envSpec);
 		
@@ -26,7 +30,7 @@ public class RandomActionsTest {
 		
 		int numSteps = 10;
 		for (int step = 0; step < numSteps; step++) {
-			var action = new RLMoveAction(actionSpace.sample());
+			var action = new RLMoveAction(actionSpace.sample(rnd));
 			var stepOutput = rlEnv.step(action);
 			var nextObs = stepOutput.getNextObservation();
 			double reward  = stepOutput.getReward();
