@@ -21,7 +21,9 @@ public class RLAgentConnectTest {
 		double[] actionMin = {-10.0, -10.0};
 		double[] actionMax = {10.0, 10.0};
 		var actionSpace = new RLBoxSpace(actionMin, actionMax);
-		var envSpec = new RLEnvSpec<>("IntrusionSim", actionSpace);
+		// TODO: specify an observation that contains the detections
+		var observationSpace = new RLBoxSpace(actionMin, actionMax);
+		var envSpec = new RLEnvSpec<>("IntrusionSim", actionSpace, observationSpace);
 		
 		var config = new RLAgentConfig();
 		var connector = new RLAgentSocketConnector(config.host, config.port);
@@ -34,11 +36,11 @@ public class RLAgentConnectTest {
 		var initObs = rlEnv.reset();
 		var currentObs = initObs.clone();
 		
-		int numSteps = 50;
+		int numSteps = 200;
 		for (int step = 0; step < numSteps; step++) {
 			
 			// Request the action from the remote RLAgent
-			var action = connector.getRLAgentResponse(RLAgentRequest.getAction(initObs));
+			var action = connector.getRLAgentResponse(RLAgentRequest.getAction(currentObs));
 			
 			// Step the environment
 			var stepOutput = rlEnv.step(action);

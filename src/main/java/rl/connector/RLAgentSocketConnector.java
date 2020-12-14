@@ -154,7 +154,7 @@ public class RLAgentSocketConnector {
 	public boolean close() {
 
 		// try to disconnect
-		boolean success = true;//getISResponse(ISRequest.disconnect());
+		boolean success = getRLAgentResponse(RLAgentRequest.disconnect());
 
 		if(success){
 			try {

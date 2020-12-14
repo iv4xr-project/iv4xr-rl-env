@@ -69,9 +69,7 @@ public class RLAgentRequest<ResponseType> {
 	 * @param spec
 	 * @return success
 	 */
-	public static RLAgentRequest<Boolean> envSpec(RLEnvSpec<?> spec) {
-		
+	public static RLAgentRequest<Boolean> envSpec(RLEnvSpec<?, ?> spec) {	
 		return new RLAgentRequest<Boolean>(Boolean.class, RLAgentRequestType.ENV_SPEC, spec);
 	}
-	
 }

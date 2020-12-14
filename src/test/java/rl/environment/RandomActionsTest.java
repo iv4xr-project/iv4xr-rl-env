@@ -21,14 +21,16 @@ public class RandomActionsTest {
 		double[] actionMin = {-10.0, -10.0};
 		double[] actionMax = {10.0, 10.0};
 		var actionSpace = new RLBoxSpace(actionMin, actionMax);
-		var envSpec = new RLEnvSpec<>("IntrusionSim", actionSpace);
+		// TODO: specify an observation that contains the detections
+		var observationSpace = new RLBoxSpace(actionMin, actionMax);
+		var envSpec = new RLEnvSpec<>("IntrusionSim", actionSpace, observationSpace);
 		var rlEnv = new RLIntrusionEnvironment(envSpec);
 		
 		var initObs = rlEnv.reset();
 		var currentObs = initObs.clone();
 		Assertions.assertNotNull(initObs);
 		
-		int numSteps = 10;
+		int numSteps = 200;
 		for (int step = 0; step < numSteps; step++) {
 			var action = new RLMoveAction(actionSpace.sample(rnd));
 			var stepOutput = rlEnv.step(action);

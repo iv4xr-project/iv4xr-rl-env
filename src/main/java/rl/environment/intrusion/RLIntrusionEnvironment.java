@@ -13,7 +13,7 @@ import rl.environment.generic.RLEnvironment;
 import rl.environment.generic.RLStepOutput;
 import world.LegacyObservation;
 
-public class RLIntrusionEnvironment extends RLEnvironment<RLMoveAction, RLIntrusionObservation, RLDummyReward, RLDummyEndCondition, RLBoxSpace> {
+public class RLIntrusionEnvironment extends RLEnvironment<RLMoveAction, RLIntrusionObservation, RLDummyReward, RLDummyEndCondition, RLBoxSpace, RLBoxSpace> {
 
 	protected IntrusionSimulationEnvironment simulationEnvironment;
 	protected ExsuEnvironment exsuEnvironment;
@@ -21,7 +21,7 @@ public class RLIntrusionEnvironment extends RLEnvironment<RLMoveAction, RLIntrus
 	protected int playerAgentId = 1;
 	protected boolean initialized = false; 
 	
-	public RLIntrusionEnvironment(RLEnvSpec<RLBoxSpace> envSpec) {
+	public RLIntrusionEnvironment(RLEnvSpec<RLBoxSpace, RLBoxSpace> envSpec) {
 		super(envSpec);
 		this.rewardFunction = new RLDummyReward();
 		this.endCondition = new RLDummyEndCondition();
