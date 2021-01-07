@@ -1,6 +1,6 @@
 package rl.environment.intrusion;
 
-import helperclasses.datastructures.Vec3;
+import eu.iv4xr.framework.spatial.Vec3;
 import intrusionSimulation.ISAgentCommand;
 import rl.environment.generic.RLAction;
 
@@ -12,7 +12,7 @@ public class RLMoveAction extends RLAction<double[], ISAgentCommand> {
 
 	@Override
 	public ISAgentCommand asCommand(int agentId) {
-		return ISAgentCommand.moveToCommand(agentId, new Vec3(rawAction[0], rawAction[1], 0.0));
+		return ISAgentCommand.moveToCommand(agentId, new Vec3((float) rawAction[0],(float) rawAction[1], 0.0f));
 	}
 
 }

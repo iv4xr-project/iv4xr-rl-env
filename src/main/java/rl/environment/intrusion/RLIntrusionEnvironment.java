@@ -1,8 +1,5 @@
 package rl.environment.intrusion;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import intrusionSimulation.ExsuEnvironment;
 import intrusionSimulation.ISAgentCommand;
 import intrusionSimulation.ISRequest;
@@ -12,6 +9,9 @@ import rl.environment.generic.RLEnvSpec;
 import rl.environment.generic.RLEnvironment;
 import rl.environment.generic.RLStepOutput;
 import world.LegacyObservation;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class RLIntrusionEnvironment extends RLEnvironment<RLMoveAction, RLIntrusionObservation, RLDummyReward, RLDummyEndCondition, RLBoxSpace, RLBoxSpace> {
 

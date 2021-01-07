@@ -1,6 +1,6 @@
 package rl.environment.intrusion;
 
-import helperclasses.datastructures.Vec3;
+import eu.iv4xr.framework.spatial.Vec3;
 import rl.environment.generic.RLObservation;
 import world.LegacyObservation;
 

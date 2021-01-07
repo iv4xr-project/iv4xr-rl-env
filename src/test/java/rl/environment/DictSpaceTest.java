@@ -1,20 +1,14 @@
 package rl.environment;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import rl.environment.generic.*;
+
 import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Random;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import rl.environment.generic.DictSpaceSerializer;
-import rl.environment.generic.RLBoxSpace;
-import rl.environment.generic.RLBoxSpace2D;
-import rl.environment.generic.RLDictSpace;
-import rl.environment.generic.RLDiscreteSpace;
 
 public class DictSpaceTest {
 	
@@ -25,7 +19,8 @@ public class DictSpaceTest {
 		var discrete = new RLDiscreteSpace(10);
 		
 		var spaces = Map.of("pos", box2, "id", discrete);
-		var dict = new RLDictSpace(spaces);
+		// Javac needs the explicit cast while eclipse compiler doesn't
+		var dict = new RLDictSpace((Map<String, RLSpace<?>>) spaces);
 		
 		var sample = dict.sample(new Random());
 		
