@@ -1,16 +1,15 @@
 package rl.environment;
 
-import java.util.Arrays;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
 import rl.connector.RLAgentConfig;
 import rl.connector.RLAgentRequest;
 import rl.connector.RLAgentSocketConnector;
 import rl.environment.generic.RLBoxSpace;
 import rl.environment.generic.RLEnvSpec;
 import rl.environment.intrusion.RLIntrusionEnvironment;
+
+import java.util.Arrays;
 
 public class RLAgentConnectTest {
 	
@@ -36,7 +35,7 @@ public class RLAgentConnectTest {
 		var initObs = rlEnv.reset();
 		var currentObs = initObs.clone();
 		
-		int numSteps = 200;
+		int numSteps = 20;
 		for (int step = 0; step < numSteps; step++) {
 			
 			// Request the action from the remote RLAgent
