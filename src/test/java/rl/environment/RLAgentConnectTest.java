@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import rl.connector.RLAgentConfig;
 import rl.connector.RLAgentRequest;
 import rl.connector.RLAgentSocketConnector;
-import rl.environment.generic.RLBoxSpace;
 import rl.environment.generic.RLEnvSpec;
+import rl.environment.intrusion.RLIntrusionConfig;
 import rl.environment.intrusion.RLIntrusionEnvironment;
 
 import java.util.Arrays;
@@ -17,13 +17,11 @@ public class RLAgentConnectTest {
 	@Test
 	public void sendSpecTest()
 	{
-		double[] actionMin = {-10.0, -10.0};
-		double[] actionMax = {10.0, 10.0};
-		var actionSpace = new RLBoxSpace(actionMin, actionMax);
-		// TODO: specify an observation that contains the detections
-		var observationSpace = new RLBoxSpace(actionMin, actionMax);
-		var envSpec = new RLEnvSpec<>("IntrusionSim", actionSpace, observationSpace);
-		
+		var envSpec = new RLEnvSpec<>(
+				"IntrusionSim",
+				RLIntrusionConfig.ActionSpace,
+				RLIntrusionConfig.ObservationSpace
+		);
 		var config = new RLAgentConfig();
 		var connector = new RLAgentSocketConnector(config.host, config.port);
 		var response = connector.getRLAgentResponse(RLAgentRequest.envSpec(envSpec));

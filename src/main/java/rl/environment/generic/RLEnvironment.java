@@ -16,5 +16,12 @@ public abstract class RLEnvironment<ActionType, ObservationType, RewardType, End
 		super();
 		this.envSpec = envSpec;
 	}
-	
+
+	public ActionSpaceType getActionSpace() {
+		return envSpec.actionSpace;
+	}
+
+	public ObservationSpaceType getObservationSpace() {
+		return envSpec.observationSpace;
+	}
 }
