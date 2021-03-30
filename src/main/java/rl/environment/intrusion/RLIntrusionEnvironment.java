@@ -26,7 +26,7 @@ public class RLIntrusionEnvironment extends RLEnvironment<RLMoveAction, RLIntrus
 		this.rewardFunction = new RLDummyReward();
 		this.endCondition = new RLDummyEndCondition();
 		
-		this.exsuEnvironment = new ExsuEnvironment();
+		//this.exsuEnvironment = new ExsuEnvironment();
 		this.simulationEnvironment = new IntrusionSimulationEnvironment();
 		this.playerAgentId = 1; // TODO: assess it automatically	
 		this.initialized = false;
@@ -36,18 +36,18 @@ public class RLIntrusionEnvironment extends RLEnvironment<RLMoveAction, RLIntrus
 	public RLIntrusionObservation reset() {
 		if (!initialized)
 		{
-			boolean res = exsuEnvironment.getISResponse(ISRequest.startSimulation());
-			if (!res) {
-				throw new RuntimeException("Unable to start environment");
-			}		
+//			boolean res = exsuEnvironment.getISResponse(ISRequest.startSimulation());
+//			if (!res) {
+//				throw new RuntimeException("Unable to start environment");
+//			}
 			initialized = true;
 		}
 		else
 		{
-			boolean res = exsuEnvironment.getISResponse(ISRequest.restartSimulation());
-			if (!res) {
-				throw new RuntimeException("Unable to reset environment");
-			}
+//			boolean res = exsuEnvironment.getISResponse(ISRequest.restartSimulation());
+//			if (!res) {
+//				throw new RuntimeException("Unable to reset environment");
+//			}
 		}
 		
 		LegacyObservation obs = simulationEnvironment.getISResponse(
@@ -77,17 +77,17 @@ public class RLIntrusionEnvironment extends RLEnvironment<RLMoveAction, RLIntrus
 	}
 	
 	public void close() {	
-		boolean res = exsuEnvironment.getISResponse(ISRequest.pauseSimulation());
-		if (!res) {
-			throw new RuntimeException("Unable to stop environment");
-		}
+//		boolean res = exsuEnvironment.getISResponse(ISRequest.pauseSimulation());
+//		if (!res) {
+//			throw new RuntimeException("Unable to stop environment");
+//		}
 		
 		if (!simulationEnvironment.closeSocket()) {
 			throw new RuntimeException(("Server refuses to close the socket exchange"));
 		}
-		if (!exsuEnvironment.close()) {
-			throw new RuntimeException(("Server refuses to close the socket exchange"));
-		}
+//		if (!exsuEnvironment.close()) {
+//			throw new RuntimeException(("Server refuses to close the socket exchange"));
+//		}
 	}
 
 }
