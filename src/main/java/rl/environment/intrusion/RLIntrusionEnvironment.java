@@ -18,8 +18,9 @@ public class RLIntrusionEnvironment extends RLEnvironment<RLMoveAction, RLIntrus
 	protected IntrusionSimulationEnvironment simulationEnvironment;
 	protected ExsuEnvironment exsuEnvironment;
 	
-	protected int playerAgentId = 1;
-	protected boolean initialized = false; 
+	protected int playerAgentId = 2;
+	protected boolean initialized = false;
+
 	
 	public RLIntrusionEnvironment(RLEnvSpec<RLBoxSpace, RLBoxSpace> envSpec) {
 		super(envSpec);
@@ -28,7 +29,7 @@ public class RLIntrusionEnvironment extends RLEnvironment<RLMoveAction, RLIntrus
 		
 		//this.exsuEnvironment = new ExsuEnvironment();
 		this.simulationEnvironment = new IntrusionSimulationEnvironment();
-		this.playerAgentId = 1; // TODO: assess it automatically	
+		this.playerAgentId = 2; // TODO: assess it automatically
 		this.initialized = false;
 	}
 
