@@ -21,6 +21,8 @@ public class RLIntrusionEnvironment extends RLEnvironment<RLMoveAction, RLIntrus
 	protected int playerAgentId = 2;
 	protected boolean initialized = false;
 
+	protected double stepInterval = 10.0;
+	protected long lastStepTime = 0;
 	
 	public RLIntrusionEnvironment(RLEnvSpec<RLBoxSpace, RLBoxSpace> envSpec) {
 		super(envSpec);
@@ -31,6 +33,9 @@ public class RLIntrusionEnvironment extends RLEnvironment<RLMoveAction, RLIntrus
 		this.simulationEnvironment = new IntrusionSimulationEnvironment();
 		this.playerAgentId = 2; // TODO: assess it automatically
 		this.initialized = false;
+
+		this.stepInterval = 10.0;
+		this.lastStepTime = 0;
 	}
 
 	@Override
@@ -62,6 +67,19 @@ public class RLIntrusionEnvironment extends RLEnvironment<RLMoveAction, RLIntrus
 	@Override
 	public RLStepOutput<RLIntrusionObservation> step(RLMoveAction action) {
 		assert(initialized);
+
+		if (System.currentTimeMillis() - this.lastStepTime < this.stepInterval * 1000) {
+				long remainingMillis = (long) (
+						this.stepInterval * 1000 - (System.currentTimeMillis() - this.lastStepTime)
+				);
+				try {
+					Thread.sleep(remainingMillis);
+				} catch (InterruptedException ex) {
+					Thread.currentThread().interrupt();
+				}
+		}
+		this.lastStepTime = System.currentTimeMillis();
+
 		LegacyObservation obs = simulationEnvironment.getISResponse(
 				ISRequest.command(action.asCommand(playerAgentId))
 		);
