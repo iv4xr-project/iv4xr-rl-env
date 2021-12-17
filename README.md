@@ -6,6 +6,9 @@ iv4XR framework and a connector to work with remote Deep Reinforcement Learning 
 An example Reinforcement Learning environment is implemented, based on the iv4XR-IntrusionSimulation
 system under test.
 
+An illustration of usage is available in the project's Wiki:
+https://github.com/iv4xr-project/iv4xr-rl-env/wiki/Results
+
 ## Installation and prerequisites
 
 This project requires Java 15.
