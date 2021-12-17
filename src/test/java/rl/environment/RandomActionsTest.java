@@ -27,29 +27,39 @@ public class RandomActionsTest {
 		var initObs = rlEnv.reset();
 		var currentObs = initObs.clone();
 		Assertions.assertNotNull(initObs);
-		
-		int numSteps = 20;
-		for (int step = 0; step < numSteps; step++) {
-			var action = new RLMoveAction(rlEnv.getActionSpace().sample(rnd));
-			var stepOutput = rlEnv.step(action);
-			var nextObs = stepOutput.getNextObservation();
-			double reward  = stepOutput.getReward();
-			boolean done = stepOutput.isDone();
-			var info = stepOutput.getInfo();
-			System.out.println(String.format(
-					"Current transition: (s: %s, a: %s, r: %f, ns: %s, d: %s) at tick %s",
-					Arrays.toString(currentObs.getRawObservation()),
-					Arrays.toString(action.getRawAction()),
-					reward,
-					Arrays.toString(nextObs.getRawObservation()),
-					done,
-					nextObs.getWomState().tick
-			));
-			
-			currentObs = nextObs;
-			
-			if (done) {
-				break;
+
+		int numEpisodes = 5;
+		int numSteps = 50;
+		for (int episode = 0; episode < numEpisodes; episode++) {
+			System.out.printf("Starting episode %s%n", episode);
+			rlEnv.reset();
+			for (int step = 0; step < numSteps; step++) {
+				var randNum = rnd.nextInt();
+				var action = new RLMoveAction(new double[]{-25.45, 266.85});
+				if (randNum % 2 == 0) {
+					action = new RLMoveAction(new double[]{-25.45, 266.85});
+				}
+				//var action = new RLMoveAction(rlEnv.getActionSpace().sample(rnd));
+				var stepOutput = rlEnv.step(action);
+				var nextObs = stepOutput.getNextObservation();
+				double reward = stepOutput.getReward();
+				boolean done = stepOutput.isDone();
+				var info = stepOutput.getInfo();
+				System.out.printf(
+						"Current transition: (\n\ts: %s,\n\ta: %s,\n\tr: %f,\n\tns: %s,\n\td: %s\n) at tick %s%n",
+						currentObs.getRawObservation(),
+						Arrays.toString(action.getRawAction()),
+						reward,
+						nextObs.getRawObservation(),
+						done,
+						nextObs.getWomState().timestamp
+				);
+
+				currentObs = nextObs;
+
+				if (done) {
+					break;
+				}
 			}
 		}
 		

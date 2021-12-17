@@ -1,37 +1,44 @@
 package rl.connector;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.lang.reflect.Modifier;
-import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import rl.environment.generic.DictSpaceSerializer;
-import rl.environment.generic.RLDictSpace;
-import zmq.ZError;
-
-import org.zeromq.ZMQ;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
+import org.zeromq.ZMQ;
+import rl.environment.generic.DictSpaceSerializer;
+import rl.environment.generic.RLDictSpace;
+import rl.environment.intrusion.RLMoveAction;
+import zmq.ZError;
 
+import java.lang.reflect.Modifier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+/**
+ * Connector of the iv4XR RL Environment to a Python RL Agent.
+ * This connector can use two modes.
+ * With SERVER mode, the Gym interface is provided to the RL Agent
+ * through RESET and STEP orders. This is the preferred mode for
+ * training.
+ * With CLIENT mode, iv4XR runs the control loop and asks the RL Agent
+ * for actions with the GET_ACTION request. It can also provide state,
+ * reward and information through the LOG_RETURNS request. This can
+ * prove useful while deploying a trained RL Agent.
+ *
+ * For interoperability, The ZeroMQ library is used with TCP Socket as backend
+ * and JSON as message format.
+ */
 public class RLAgentSocketConnector {
-	
+
+	public enum Mode {
+		SERVER, CLIENT
+	};
 	
 	/**
-	 * COPIED FROM APLIB to freeze the interface
-	 * An instance of this class is used to record a command that an agent sent to the
-	 * real environment through an instance of {@link Environment}. This is so that
-	 * the Environment can store what was the last command sent for the purpose of
-	 * instrumentation.
+	 * An elementary operation with the RL Agent. This is mostly used for wrapping
+	 * JSON serialization.
 	 */
 	static public class RLAgentOperation {
 		
@@ -82,39 +89,49 @@ public class RLAgentSocketConnector {
 	// initialise socket and input output streams
 	ZContext context;
 	ZMQ.Socket socket;
-	
-	public RLAgentSocketConnector(String address, int port) {
-		
-		int maxWaitTime = 20000;
-		System.out.println(String.format("Trying to connect with client on %s:%s (will time-out after %s seconds).", address, port, maxWaitTime/1000));
-		long startTime = System.nanoTime();
 
-		while (!socketReady() && millisElapsed(startTime) < maxWaitTime)
-		{
-			// establish a connection
+	/**
+	 * Initialize the connector with the given mode.
+	 *
+	 * @param address serving address if SERVER mode, RL Agent address if CLIENT mode.
+	 * @param port listening port if SERVER mode, RL Agent port if CLIENT mode.
+	 * @param mode SERVER of CLIENT mode.
+	 */
+	public RLAgentSocketConnector(String address, int port, Mode mode) {
+		boolean isConnected = false;
+		if (mode == Mode.CLIENT) {
+			int maxWaitTime = 20000;
+			System.out.printf("Trying to connect with client on %s:%s (will time-out after %s seconds).%n", address, port, maxWaitTime/1000);
+			long startTime = System.nanoTime();
+
+			while ((!socketReady() || !isConnected) && millisElapsed(startTime) < maxWaitTime) {
+
+				// establish a connection
+				try {
+					context = new ZContext();
+					socket = context.createSocket(SocketType.REQ);
+					isConnected = socket.connect("tcp://" + address + ":" + port);
+					System.out.println("Just connected to Policy Server");
+				} catch (ZError.CtxTerminatedException | ZError.IOException | ZError.InstantiationException u) {
+					System.out.println(u);
+				}
+			}
+
+			if(socketReady() && isConnected) {
+				System.out.printf("Connected with server on %s:%s%n", address, port);
+			}
+			else {
+				System.out.println("Could not establish a connection with server.");
+			}
+		} else if (mode == Mode.SERVER) {
 			try {
 				context = new ZContext();
-				socket = context.createSocket(SocketType.REQ);
-				socket.connect("tcp://"+address+":"+port);
-				System.out.println("Just connected to Policy Server"); 
-			}
-			catch (ZError.CtxTerminatedException u) {
+				socket = context.createSocket(SocketType.REP);
+				socket.bind("tcp://" + address + ":" + port);
+			} catch (ZError.CtxTerminatedException | ZError.IOException | ZError.InstantiationException u) {
 				System.out.println(u);
 			}
-			catch(ZError.IOException i) {
-				System.out.println(i);
-			}
-			catch (ZError.InstantiationException i) {
-				System.out.println(i);				
-			}
 		}
-
-		if(socketReady()) {
-			System.out.println(String.format("Connected with server on %s:%s", address, port));
-		}
-		else {
-			System.out.println(String.format("Could not establish a connection with server."));
-		}	
 	}
 	
 	/**
@@ -130,22 +147,6 @@ public class RLAgentSocketConnector {
 	 */
 	private float millisElapsed(long startTimeNano){
 		return (System.nanoTime() - startTimeNano) / 1000000f;
-	}
-
-	public boolean closeSocket()
-	{
-		try {
-			if (socket != null)
-				socket.close();
-			
-			System.out.println(String.format("Disconnected from the host."));
-		} catch (ZError.IOException e) {
-			System.out.println(e.getMessage());
-			System.out.println(String.format("Could not disconnect from the host by closing the socket."));
-			return false;
-		}
-		
-		return true;
 	}
 	
 	/**
@@ -176,10 +177,7 @@ public class RLAgentSocketConnector {
 	
 	
 	/**
-	 * Send the specified command to the environment. This method also anticipates
-	 * that the environment is populated by multiple reactive entities, so the
-	 * command includes an ID if addressing a specific entity in the environment is
-	 * needed.
+	 * Send commands to the RL Agent and get responses, when in CLIENT mode.
 	 * 
 	 * @param invokerId A unique ID identifying the invoker of this method, e.g. in
 	 *                  the format agentid.actionid.
@@ -204,7 +202,7 @@ public class RLAgentSocketConnector {
 	}
 	
 	/**
-	 * Override this method to implement an actual Environment.
+	 * Send commands to the RL Agent and get responses, when in CLIENT mode.
 	 * 
 	 * @param cmd representing the command to send to the real environment.
 	 * @return an object that the real environment sends back as the result of the
@@ -237,6 +235,30 @@ public class RLAgentSocketConnector {
 		
 		throw new IllegalArgumentException();
 	}
+
+	/**
+	 * Poll the next request from the RL Agent, when this connector is in
+	 * SERVER mode.
+	 *
+	 * @return request from the RL Agent.
+	 */
+	public RLAgentRequest<?> pollRequest() {
+		try {
+			String messageReceived = socket.recvStr();
+			var agentOperation = gson.fromJson(messageReceived, RLAgentOperation.class);
+			var commandType = RLAgentRequestType.valueOf(agentOperation.command);
+			if (commandType == RLAgentRequestType.GET_SPEC || commandType == RLAgentRequestType.RESET) {
+				return RLAgentRequest.plainRequest(commandType, agentOperation.arg);
+			} else if (commandType == RLAgentRequestType.STEP) {
+				return RLAgentRequest.plainRequest(commandType, gson.fromJson(String.valueOf(agentOperation.arg), RLMoveAction.class));
+			} else {
+				throw new IllegalArgumentException("Illegal command received: " + agentOperation.command);
+			}
+		} catch (ZError.IOException ex) {
+			System.out.println("I/O error: " + ex.getMessage());
+			return null;
+		}
+	}
     
 	private String printMessage(String message){
 		System.out.println("SENDING:" + message);
@@ -244,10 +266,10 @@ public class RLAgentSocketConnector {
 	}
 	
 	/**
-	 * This method provides a higher level wrapper over Environment.sendCommand. It
-	 * calls Environment.sendCommand which in turn will call ISSocketEnvironement.sendCommand_
-	 * It will also cast the json back to type T.
-	 * @param request
+	 * This method provides a higher level wrapper over sendCommand. Main entry
+	 * point of the connector, when in CLIENT mode.
+	 *
+	 * @param request request to the RL Agent.
 	 * @param <T> any response type
 	 * @return response
 	 */
@@ -256,5 +278,22 @@ public class RLAgentSocketConnector {
 		/*if(!close())
 			System.out.println(String.format("An error occurred while closing the connection"));*/
 		return (T) gson.fromJson(message, request.responseType);
+	}
+
+	/**
+	 * Send a response to the RL Agent (as JSON), when in SERVER mode.
+	 *
+	 * @param response response object.
+	 * @param <T> response object type.
+	 */
+	public <T> void sendRLAgentResponse(T response) {
+		String jsonMessage = gson.toJson(response);
+		// write to the socket
+		try {
+			socket.send(jsonMessage);
+			LOGGER.log(logLevel, "message sent: " + jsonMessage);
+		} catch (ZError.IOException ex) {
+			System.out.println("I/O error: " + ex.getMessage());
+		}
 	}
 }

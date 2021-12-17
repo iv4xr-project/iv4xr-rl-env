@@ -1,13 +1,28 @@
 package rl.environment.intrusion;
 
+import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.iv4xr.framework.spatial.Vec3;
+import intrusionSimulation.ISObservation;
 import rl.environment.generic.RLObservation;
-import world.LegacyEntity;
-import world.LegacyObservation;
 
-public class RLIntrusionObservation extends RLObservation<double[], LegacyObservation> {
-	//public static int numDetections = 5;
-	public RLIntrusionObservation(LegacyObservation womState) {
+import java.util.HashMap;
+
+/**
+ * Observation for the Intruder RL Agent.
+ */
+public class RLIntrusionObservation extends RLObservation<HashMap<String, double[]>, ISObservation> {
+	private class LocalObservationStack {
+		// Objective:
+		// Limit the capacity of the local observations
+		// Preserve the order of an observed entity between 2 consecutive observations
+		// TODO: implement this
+	}
+
+	private double computeOrientationFromVelocity(Vec3 velocity) {
+		return Math.atan2(velocity.y, velocity.x);
+	}
+
+	public RLIntrusionObservation(ISObservation womState) {
 		super(womState);
 	}
 
@@ -17,43 +32,47 @@ public class RLIntrusionObservation extends RLObservation<double[], LegacyObserv
 	}
 
 	@Override
-	public double[] initRawObservation() {
-		Vec3 agentPosition = getWomState().agentPosition;
-		double[] raw = RLIntrusionConfig.computeObservationMin();
-		raw[0] = agentPosition.x;
-		raw[1] = agentPosition.y;
-
-		int i = 0;
-		for (LegacyEntity detectedEntity : getWomState().entities) {
-			raw[2 + 2*i] = detectedEntity.position.x;
-			raw[2 + 2*i+1] = detectedEntity.position.y;
-			i += 1;
-			if (i == RLIntrusionConfig.numDetections)
-				break;
-		}
-
-		return raw;
-	}
-
-/*	@Override
 	public HashMap<String, double[]> initRawObservation() {
-		Vec3 agentPosition = getWomState().agentPosition;
-		double[] raw = { agentPosition.x, agentPosition.y };
+		Vec3 agentPosition = getWomState().position;
+		double orientation = computeOrientationFromVelocity(getWomState().velocity);
+		double[] intruderObservation = { agentPosition.x, agentPosition.y, orientation };
 
-		double[] detections = new double[2*numDetections];
-		int i = 0;
-		for (LegacyEntity detectedEntity : getWomState().entities) {
-			detections[2*i] = detectedEntity.position.x;
-			detections[2*i+1] = detectedEntity.position.y;
-			i += 1;
-			if (i == numDetections)
-				break;
+		double[] guardObservation = new double[5 * RLIntrusionConfig.numGuards];
+		double[] cameraObservation = new double[5 * RLIntrusionConfig.numCameras];
+		int guardIndex = 0;
+		int cameraIndex = 0;
+		for (WorldEntity detectedEntity : getWomState().elements.values()) {
+			if (detectedEntity.id.contains("FixedGuard")) {
+				double[] raw = {
+						detectedEntity.position.x,
+						detectedEntity.position.y,
+						0.0,
+						0.0,
+						RLIntrusionConfig.cameraVisionRange
+				};
+				System.arraycopy(raw, 0, cameraObservation, cameraIndex * 5, 5);
+				cameraIndex++;
+			} else if (detectedEntity.id.contains("Guard")) {
+				orientation = computeOrientationFromVelocity(detectedEntity.velocity);
+				double[] raw = {
+						detectedEntity.position.x,
+						detectedEntity.position.y,
+						orientation, 0.0,
+						RLIntrusionConfig.guardVisionRange
+				};
+				System.arraycopy(raw, 0, guardObservation, guardIndex * 5, 5);
+				guardIndex++;
+			} else {
+				throw new IllegalArgumentException("Unexpected detected entity" + detectedEntity.id);
+			}
 		}
 
 		var observation = new HashMap<String, double[]>();
-		observation.put("internalState", raw);
-		observation.put("detections", detections);
+		observation.put("intruder", intruderObservation);
+		observation.put("goal", RLIntrusionConfig.goalPosition);
+		observation.put("guard", guardObservation);
+		observation.put("fixed_guard", cameraObservation);
 		return observation;
-	}*/
+	}
 
 }

@@ -1,13 +1,17 @@
 package rl.connector;
 
-import com.google.gson.JsonObject;
-
+import rl.environment.generic.RLEnvSpec;
 import rl.environment.generic.RLObservation;
-import rl.environment.generic.RLAction;
 import rl.environment.generic.RLStepOutput;
 import rl.environment.intrusion.RLMoveAction;
-import rl.environment.generic.RLEnvSpec;
 
+import javax.lang.model.type.NullType;
+
+/**
+ * Base request class when connecting to a Python RL Agent.
+ *
+ * @param <ResponseType>
+ */
 public class RLAgentRequest<ResponseType> {
 	/**
 	 * Java can not determine the class of ResponseType at runtime.
@@ -19,23 +23,19 @@ public class RLAgentRequest<ResponseType> {
 	public Object arg;
 
 	/**
-	 * This constructor is based on the sendCommand method from JsonEnvironment
+	 * Initialize a request with response type, command and argument.
 	 */
 	private RLAgentRequest(Class<ResponseType> responseType, RLAgentRequestType cmd, Object arg) {
-		// convert the command to string
 		this.responseType = responseType;
-
 		this.cmd = cmd;
 		this.arg = arg;
 	}
 
 	/**
-	 * This constructor is based on the sendCommand method from JsonEnvironment
+	 * Initialize a request with response type, command and no argument.
 	 */
 	private RLAgentRequest(Class<ResponseType> responseType, RLAgentRequestType cmd) {
-		// convert the command to string
 		this.responseType = responseType;
-
 		this.cmd = cmd;
 		this.arg = null;
 	}
@@ -66,10 +66,19 @@ public class RLAgentRequest<ResponseType> {
 	
 	/**
 	 * Send the environment specifications to the agent
-	 * @param spec
+	 * @param spec environment specification.
 	 * @return success
 	 */
 	public static RLAgentRequest<Boolean> envSpec(RLEnvSpec<?, ?> spec) {	
-		return new RLAgentRequest<Boolean>(Boolean.class, RLAgentRequestType.ENV_SPEC, spec);
+		return new RLAgentRequest<>(Boolean.class, RLAgentRequestType.ENV_SPEC, spec);
+	}
+
+	/**
+	 * Send a request to the agent without waiting for a response.
+	 * @param requestType type of the request.
+	 * @param arg argument of the request.
+	 */
+	public static RLAgentRequest<NullType> plainRequest(RLAgentRequestType requestType, Object arg) {
+		return new RLAgentRequest<>(NullType.class, requestType, arg);
 	}
 }

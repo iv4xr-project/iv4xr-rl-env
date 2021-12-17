@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import rl.environment.generic.*;
+import rl.environment.intrusion.RLIntrusionConfig;
 
 import java.lang.reflect.Modifier;
 import java.util.Map;
@@ -35,5 +36,7 @@ public class DictSpaceTest {
 				.create();
 		System.out.println(gson.toJson(sample.get("pos")));
 		System.out.println(gson.toJson(dictOfDict));
+
+		System.out.println(gson.toJson(RLIntrusionConfig.ObservationSpace));
 	}
 }

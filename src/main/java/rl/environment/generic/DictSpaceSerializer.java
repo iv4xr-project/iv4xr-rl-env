@@ -1,12 +1,15 @@
 package rl.environment.generic;
 
-import java.lang.reflect.Type;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
+import java.lang.reflect.Type;
+
+/**
+ * JSON Serializer for RLDictSpace, helps for interoperability with Python.
+ */
 public class DictSpaceSerializer implements JsonSerializer<RLDictSpace> {
 	@Override
 	public JsonElement serialize(RLDictSpace spa, Type type, JsonSerializationContext context) {
